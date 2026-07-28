@@ -37,3 +37,14 @@ export type Article = {
     href: string;
   };
 };
+
+export type ArticleSummary = Pick<
+  Article,
+  | "slug"
+  | "category"
+  | "title"
+  | "deck"
+  | "heroImage"
+  | "publishedAt"
+  | "readTime"
+>;

@@ -53,7 +53,7 @@ export function ArticlePage({ slug }: ArticlePageProps) {
     <>
       <header className="site-header">
         <div className="header-inner">
-          <a className="brand" href="#top" aria-label="The Local Edit home">
+          <a className="brand" href="/" aria-label="The Local Edit home">
             <span className="brand-mark" aria-hidden="true" />
             <span className="brand-copy">
               <span className="brand-name">The Local Edit</span>
@@ -61,7 +61,7 @@ export function ArticlePage({ slug }: ArticlePageProps) {
             </span>
           </a>
           <nav className="header-nav" aria-label="Main navigation">
-            <a href="#article">Travel notes</a>
+            <a href="/">Travel notes</a>
             <a href="#checklist">Villa guide</a>
             <a
               className="nav-cta"

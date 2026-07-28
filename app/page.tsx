@@ -1,5 +1,5 @@
-import { ArticlePage } from "@/features/articles/components/article-page";
+import { ArticleIndexPage } from "@/features/articles/components/article-index-page";
 
 export default function Home() {
-  return <ArticlePage slug="how-to-choose-a-villa-in-bali" />;
+  return <ArticleIndexPage />;
 }
