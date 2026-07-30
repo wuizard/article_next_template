@@ -1,11 +1,11 @@
-import { articles } from "@/features/articles/data/articles";
+import { getArticle, isLanguage } from "@/features/articles/data/articles";
 
 export async function GET(
   _request: Request,
-  context: { params: Promise<{ slug: string }> },
+  context: { params: Promise<{ lang: string; slug: string }> },
 ) {
-  const { slug } = await context.params;
-  const article = articles[slug];
+  const { lang, slug } = await context.params;
+  const article = isLanguage(lang) ? getArticle(lang, slug) : undefined;
 
   if (!article) {
     return Response.json({ message: "Article not found" }, { status: 404 });
