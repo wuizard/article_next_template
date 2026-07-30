@@ -1,0 +1,12 @@
+[Unit]
+Description=Write the day's drafts every morning
+
+[Timer]
+# 01:00 Bali time. Drafts are waiting in the panel when you start work.
+OnCalendar=*-*-* 01:00:00
+Persistent=true
+# Avoid every deployment hitting the feeds at the same second.
+RandomizedDelaySec=600
+
+[Install]
+WantedBy=timers.target

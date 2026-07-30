@@ -1,0 +1,33 @@
+[Unit]
+Description=The Local Edit — public site
+Documentation=https://github.com/your-org/local-bali-villas-journal
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=journal
+Group=journal
+WorkingDirectory=/srv/journal/repo
+Environment=NODE_ENV=production
+Environment=PORT=3000
+ExecStart=/usr/bin/npm run start
+Restart=on-failure
+RestartSec=5
+
+# The site only ever reads. Nothing here needs write access to the repo, and
+# it never touches the admin panel's files.
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ProtectHome=yes
+ProtectKernelTunables=yes
+ProtectControlGroups=yes
+RestrictSUIDSGID=yes
+RestrictNamespaces=yes
+LockPersonality=yes
+# npm writes a cache and vinext writes logs; nothing else.
+ReadWritePaths=/srv/journal/repo/.wrangler /srv/journal/.npm
+
+[Install]
+WantedBy=multi-user.target

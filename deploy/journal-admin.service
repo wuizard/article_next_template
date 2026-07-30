@@ -1,0 +1,31 @@
+[Unit]
+Description=The Local Edit — draft review panel
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=journal
+Group=journal
+WorkingDirectory=/srv/journal/repo
+Environment=NODE_ENV=production
+ExecStart=/usr/bin/node scripts/admin/server.mjs
+Restart=on-failure
+RestartSec=5
+
+# Binds to 127.0.0.1 by default (ADMIN_HOST). Never expose this port
+# directly — put it behind nginx with TLS and an IP allowlist.
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ProtectHome=yes
+ProtectKernelTunables=yes
+ProtectControlGroups=yes
+RestrictSUIDSGID=yes
+RestrictNamespaces=yes
+LockPersonality=yes
+# Approving a draft rewrites content/ and rebuilds into dist/.
+ReadWritePaths=/srv/journal/repo /srv/journal/.npm
+
+[Install]
+WantedBy=multi-user.target
