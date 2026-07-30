@@ -1,86 +1,95 @@
-"use client";
+/* eslint-disable @next/next/no-img-element --
+   Hero and card images are remote URLs from CONTENT_IMAGE_POOL, and
+   `next/image` here would route them through the Worker's optional
+   Cloudflare IMAGES binding, which this project does not declare.
+   Every image below sits in a container with CSS-fixed dimensions, so
+   there is no layout shift; loading/decoding hints are set explicitly. */
+import Link from "next/link";
+import {
+  articlePath,
+  formatDate,
+  getArticle,
+  getRelated,
+  langPath,
+  site,
+} from "../data/articles";
+import { getStrings } from "../i18n/strings";
+import {
+  articleJsonLd,
+  breadcrumbJsonLd,
+  faqJsonLd,
+} from "../seo/structured-data";
+import { JsonLd } from "./json-ld";
+import { ShareButton } from "./share-button";
+import { SiteFooter, SiteHeader } from "./site-chrome";
 
-import { useEffect, useState } from "react";
-import { getArticle } from "../api/get-article";
-import type { Article } from "../types/article";
-
-type ArticlePageProps = {
-  slug: string;
-};
-
-export function ArticlePage({ slug }: ArticlePageProps) {
-  const [article, setArticle] = useState<Article | null>(null);
-  const [error, setError] = useState("");
-  const [copied, setCopied] = useState(false);
-
-  useEffect(() => {
-    getArticle(slug)
-      .then(setArticle)
-      .catch((caughtError: Error) => setError(caughtError.message));
-  }, [slug]);
-
-  async function copyLink() {
-    await navigator.clipboard.writeText(window.location.href);
-    setCopied(true);
-    window.setTimeout(() => setCopied(false), 1800);
-  }
-
-  if (error) {
-    return (
-      <main className="error-shell">
-        <div className="error-card">
-          <span className="meta-label">The Local Edit</span>
-          <h1>Something went off the map.</h1>
-          <p>{error}</p>
-        </div>
-      </main>
-    );
-  }
+/**
+ * Server component. The entire article body — headings, prose, FAQs, internal
+ * links — is present in the first byte of HTML. Only the copy-link button
+ * hydrates.
+ */
+export function ArticlePage({ lang, slug }: { lang: string; slug: string }) {
+  const t = getStrings(lang);
+  const article = getArticle(lang, slug);
 
   if (!article) {
     return (
-      <main className="loading-shell" aria-live="polite">
-        <div className="loading-card">
-          <div className="loader-mark" aria-hidden="true" />
-          <span className="meta-label">The Local Edit</span>
-          <p>Bringing the story to the page…</p>
+      <main className="error-shell" id="article">
+        <div className="error-card">
+          <span className="meta-label">{site.name}</span>
+          <h1>{t.notFoundHeading}</h1>
+          <p>
+            {t.notFoundLead}
+            <Link href={langPath(lang)}>{t.notFoundLink}</Link>.
+          </p>
         </div>
       </main>
     );
   }
 
+  const related = getRelated(lang, article.slug);
+
+  // A translation rarely shares a slug, so the switcher sends other languages
+  // to their archive rather than to a URL that would 404.
+  const switcherHref = (code: string) =>
+    code === lang ? articlePath(lang, article.slug) : langPath(code);
+
   return (
     <>
-      <header className="site-header">
-        <div className="header-inner">
-          <a className="brand" href="/" aria-label="The Local Edit home">
-            <span className="brand-mark" aria-hidden="true" />
-            <span className="brand-copy">
-              <span className="brand-name">The Local Edit</span>
-              <span className="brand-subtitle">by Local Bali Villas</span>
-            </span>
-          </a>
-          <nav className="header-nav" aria-label="Main navigation">
-            <a href="/">Travel notes</a>
-            <a href="#checklist">Villa guide</a>
-            <a
-              className="nav-cta"
-              href={article.backlink.href}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Find a villa
-            </a>
-          </nav>
-        </div>
-      </header>
+      <JsonLd data={articleJsonLd(article)} />
+      <JsonLd data={breadcrumbJsonLd(article)} />
+      <JsonLd data={faqJsonLd(article)} />
+
+      <SiteHeader
+        lang={lang}
+        ctaHref={article.backlink.href}
+        switcherHref={switcherHref}
+      >
+        <Link href={langPath(lang)}>{t.navJournal}</Link>
+        {article.checklist.length > 0 && (
+          <a href="#checklist">{t.navGuide}</a>
+        )}
+      </SiteHeader>
 
       <main id="top">
+        <nav className="breadcrumbs" aria-label={t.breadcrumbAria}>
+          <ol>
+            <li>
+              <Link href={langPath(lang)}>{t.breadcrumbHome}</Link>
+            </li>
+            <li>
+              <Link href={langPath(lang, "#latest")}>{article.category}</Link>
+            </li>
+            <li aria-current="page">{article.title}</li>
+          </ol>
+        </nav>
+
         <section className="hero" aria-labelledby="article-title">
           <img
             className="hero-image"
             src={article.heroImage}
-            alt="A tranquil tropical swimming pool at a Bali villa"
+            alt={article.heroImageAlt}
+            fetchPriority="high"
           />
           <div className="hero-content">
             <div className="eyebrow">{article.category}</div>
@@ -101,21 +110,35 @@ export function ArticlePage({ slug }: ArticlePageProps) {
               </div>
             </div>
             <div className="read-meta">
-              {article.publishedAt}
+              <time dateTime={article.publishedAt}>
+                {formatDate(article.publishedAt, lang)}
+              </time>
               <br />
               {article.readTime}
+              {article.updatedAt !== article.publishedAt && (
+                <>
+                  <br />
+                  <span className="updated-note">
+                    {t.updatedPrefix}{" "}
+                    <time dateTime={article.updatedAt}>
+                      {formatDate(article.updatedAt, lang)}
+                    </time>
+                  </span>
+                </>
+              )}
             </div>
-            <nav className="toc" aria-label="Article sections">
-              <span className="meta-label">In this guide</span>
+            <nav className="toc" aria-label={t.articleSectionsAria}>
+              <span className="meta-label">{t.inThisGuide}</span>
               {article.sections.map((section) => (
                 <a href={`#${section.id}`} key={section.id}>
                   {section.heading}
                 </a>
               ))}
+              {article.faqs.length > 0 && (
+                <a href="#faq">{t.frequentlyAsked}</a>
+              )}
             </nav>
-            <button className="share-button" onClick={copyLink} type="button">
-              {copied ? "Link copied" : "Copy article link"}
-            </button>
+            <ShareButton label={t.copyLink} copiedLabel={t.linkCopied} />
           </aside>
 
           <article className="article-body">
@@ -129,30 +152,32 @@ export function ArticlePage({ slug }: ArticlePageProps) {
               >
                 <span className="section-kicker">{section.kicker}</span>
                 <h2>{section.heading}</h2>
-                {section.paragraphs.map((paragraph) => (
-                  <p key={paragraph}>{paragraph}</p>
+                {section.paragraphs.map((paragraph, paragraphIndex) => (
+                  <p key={`${section.id}-${paragraphIndex}`}>{paragraph}</p>
                 ))}
 
-                {index === 0 && (
+                {index === 0 && article.inlineImage.src && (
                   <figure className="inline-image">
                     <img
                       src={article.inlineImage.src}
                       alt={article.inlineImage.alt}
+                      loading="lazy"
+                      decoding="async"
                     />
                     <figcaption>{article.inlineImage.caption}</figcaption>
                   </figure>
                 )}
 
-                {index === 1 && (
+                {index === 1 && article.quote.text && (
                   <div className="pull-quote">
                     <blockquote>“{article.quote.text}”</blockquote>
                     <cite>{article.quote.attribution}</cite>
                   </div>
                 )}
 
-                {index === 2 && (
+                {index === 2 && article.checklist.length > 0 && (
                   <div className="checklist" id="checklist">
-                    <h3>Your pre-booking checklist</h3>
+                    <h3>{t.checklistHeading}</h3>
                     <ul>
                       {article.checklist.map((item) => (
                         <li key={item}>{item}</li>
@@ -163,39 +188,74 @@ export function ArticlePage({ slug }: ArticlePageProps) {
               </section>
             ))}
 
-            <aside className="backlink-card" aria-label="Recommended resource">
+            {article.faqs.length > 0 && (
+              <section className="faq-section" id="faq">
+                <span className="section-kicker">{t.frequentlyAsked}</span>
+                <h2>{t.faqHeading}</h2>
+                <dl className="faq-list">
+                  {article.faqs.map((faq) => (
+                    <div className="faq-item" key={faq.question}>
+                      <dt>{faq.question}</dt>
+                      <dd>{faq.answer}</dd>
+                    </div>
+                  ))}
+                </dl>
+              </section>
+            )}
+
+            {article.source.originalUrl && (
+              <p className="source-note">
+                {t.sourceNotePrefix}
+                <a
+                  href={article.source.originalUrl}
+                  target="_blank"
+                  rel="noopener nofollow"
+                >
+                  {article.source.originalTitle ?? t.sourceNoteFallbackLink}
+                </a>
+                {t.sourceNoteBy}
+                {article.source.feedTitle}
+                {t.sourceNoteSuffix}
+              </p>
+            )}
+
+            <aside className="backlink-card" aria-label={t.recommendedAria}>
               <div>
                 <span className="meta-label">{article.backlink.label}</span>
                 <h3>{article.backlink.title}</h3>
                 <p>{article.backlink.description}</p>
               </div>
-              <a
-                href={article.backlink.href}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                Visit localbalivillas.com ↗
+              <a href={article.backlink.href} target="_blank" rel="noopener">
+                {t.visitPrefix}{" "}
+                {article.backlink.href.replace(/^https?:\/\//, "")} ↗
               </a>
             </aside>
+
+            {related.length > 0 && (
+              <section className="related" aria-labelledby="related-heading">
+                <h2 id="related-heading">{t.keepReading}</h2>
+                <ul className="related-list">
+                  {related.map((item) => (
+                    <li key={item.slug}>
+                      <Link href={articlePath(lang, item.slug)}>
+                        <span className="related-category">{item.category}</span>
+                        <span className="related-title">{item.title}</span>
+                        <span className="related-deck">{item.deck}</span>
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )}
           </article>
         </div>
       </main>
 
-      <footer className="article-footer">
-        <div className="footer-inner">
-          <h2>Stay somewhere that feels like your own corner of Bali.</h2>
-          <div className="footer-links">
-            <a
-              href={article.backlink.href}
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              localbalivillas.com ↗
-            </a>
-            <span>Travel slowly. Stay locally.</span>
-          </div>
-        </div>
-      </footer>
+      <SiteFooter
+        lang={lang}
+        heading={t.footerArticleHeading}
+        ctaHref={article.backlink.href}
+      />
     </>
   );
 }

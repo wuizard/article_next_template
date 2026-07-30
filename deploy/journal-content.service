@@ -1,0 +1,20 @@
+[Unit]
+Description=The Local Edit — write the day's drafts
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+User=journal
+Group=journal
+WorkingDirectory=/srv/journal/repo
+Environment=NODE_ENV=production
+# Writes to content/drafts/ only. Nothing is published without a human
+# approving it in the review panel.
+ExecStart=/usr/bin/node scripts/generate-content.mjs
+
+NoNewPrivileges=yes
+PrivateTmp=yes
+ProtectSystem=strict
+ProtectHome=yes
+ReadWritePaths=/srv/journal/repo/content /srv/journal/.npm

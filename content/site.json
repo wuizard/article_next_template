@@ -1,0 +1,64 @@
+{
+  "url": "https://journal.localbalivillas.com",
+  "name": "The Local Edit",
+  "indexable": true,
+  "itemNoindex": false,
+  "twitterHandle": "",
+  "defaultLanguage": "id",
+  "brand": {
+    "name": "Local Bali Villas",
+    "url": "https://localbalivillas.com",
+    "logo": "/favicon.svg"
+  },
+  "languages": [
+    {
+      "code": "id",
+      "label": "Bahasa Indonesia",
+      "locale": "id_ID",
+      "tagline": "oleh Local Bali Villas",
+      "edition": "Catatan Bali · 2026",
+      "description": "Panduan villa, kawasan, dan ritme sehari-hari di Bali — ditulis untuk pelancong yang ingin merasa seperti di rumah sendiri.",
+      "topic": "Memilih dan memesan villa di Bali — kawasan, saran perjalanan praktis, dan rekomendasi lokal",
+      "keywords": [
+        "villa untuk keluarga di bali",
+        "villa dengan kolam renang pribadi di bali",
+        "daerah terbaik untuk menginap di bali",
+        "villa ubud",
+        "villa canggu",
+        "biaya tersembunyi sewa villa di bali",
+        "sewa villa bali"
+      ],
+      "cta": {
+        "label": "Rujukan lokal pilihan",
+        "title": "Jelajahi villa Bali pilihan",
+        "description": "Lihat penginapan lokal dan bicara dengan tim yang berbasis di Bali untuk menemukan yang paling cocok untuk perjalananmu.",
+        "href": "https://localbalivillas.com"
+      }
+    },
+    {
+      "code": "en",
+      "label": "English",
+      "locale": "en_US",
+      "tagline": "by Local Bali Villas",
+      "edition": "Bali notes · 2026",
+      "description": "Considered guides to Bali's villas, neighbourhoods, and everyday rituals — written for travellers who want to feel at home.",
+      "topic": "Choosing and booking villas in Bali — neighbourhoods, practical travel advice, and local recommendations",
+      "keywords": [
+        "bali villa for families",
+        "private pool villa bali",
+        "best area to stay in bali",
+        "ubud villa",
+        "canggu villa",
+        "hidden costs of renting a bali villa",
+        "bali villa rental"
+      ],
+      "cta": {
+        "label": "Recommended local resource",
+        "title": "Explore handpicked Bali villas",
+        "description": "Browse local stays and speak with a Bali-based team about the right fit for your trip.",
+        "href": "https://localbalivillas.com"
+      }
+    }
+  ],
+  "generatedAt": "2026-07-30T05:55:48.756Z"
+}

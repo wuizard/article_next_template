@@ -6,10 +6,15 @@
     "node": ">=22.13.0"
   },
   "scripts": {
-    "dev": "WRANGLER_LOG_PATH=.wrangler/wrangler.log vinext dev",
-    "build": "WRANGLER_LOG_PATH=.wrangler/wrangler.log vinext build",
+    "dev": "npm run content:sync && WRANGLER_LOG_PATH=.wrangler/wrangler.log vinext dev",
+    "build": "npm run content:sync && WRANGLER_LOG_PATH=.wrangler/wrangler.log vinext build",
     "start": "WRANGLER_LOG_PATH=.wrangler/wrangler.log vinext start",
-    "test": "npm run build && node --test tests/rendered-html.test.mjs",
+    "generate": "node scripts/generate-content.mjs",
+    "content:sync": "node scripts/generate-content.mjs --sync",
+    "content:plan": "node scripts/generate-content.mjs --dry-run",
+    "review": "node scripts/admin/server.mjs",
+    "admin:password": "node scripts/admin/hash-password.mjs",
+    "test": "npm run build && node --test tests/*.test.mjs",
     "lint": "eslint . --ignore-pattern dist --ignore-pattern .next",
     "db:generate": "drizzle-kit generate"
   },
@@ -20,6 +25,7 @@
     "react-dom": "19.2.6"
   },
   "devDependencies": {
+    "@anthropic-ai/sdk": "^0.115.0",
     "@cloudflare/vite-plugin": "1.37.1",
     "@tailwindcss/postcss": "4.2.1",
     "@types/node": "22.19.19",

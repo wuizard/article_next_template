@@ -1,112 +1,125 @@
-"use client";
+/* eslint-disable @next/next/no-img-element --
+   Hero and card images are remote URLs from CONTENT_IMAGE_POOL, and
+   `next/image` here would route them through the Worker's optional
+   Cloudflare IMAGES binding, which this project does not declare.
+   Every image below sits in a container with CSS-fixed dimensions, so
+   there is no layout shift; loading/decoding hints are set explicitly. */
+import Link from "next/link";
+import {
+  articlePath,
+  formatDate,
+  getLanguage,
+  getSummaries,
+  site,
+} from "../data/articles";
+import { getStrings } from "../i18n/strings";
+import { itemListJsonLd } from "../seo/structured-data";
+import { JsonLd } from "./json-ld";
+import { SiteFooter, SiteHeader } from "./site-chrome";
 
-import { useEffect, useState } from "react";
-import { getArticles } from "../api/get-article";
-import type { ArticleSummary } from "../types/article";
-
-export function ArticleIndexPage() {
-  const [articles, setArticles] = useState<ArticleSummary[]>([]);
-  const [error, setError] = useState("");
-
-  useEffect(() => {
-    getArticles()
-      .then(setArticles)
-      .catch((caughtError: Error) => setError(caughtError.message));
-  }, []);
+/**
+ * Server component: the full archive is in the initial HTML, so crawlers see
+ * every headline and deck without executing JavaScript.
+ */
+export function ArticleIndexPage({ lang }: { lang: string }) {
+  const t = getStrings(lang);
+  const language = getLanguage(lang);
+  const summaries = getSummaries(lang);
+  const headKeyword = language.keywords[0] ?? language.topic;
 
   return (
     <>
-      <header className="site-header">
-        <div className="header-inner">
-          <a className="brand" href="/" aria-label="The Local Edit home">
-            <span className="brand-mark" aria-hidden="true" />
-            <span className="brand-copy">
-              <span className="brand-name">The Local Edit</span>
-              <span className="brand-subtitle">by Local Bali Villas</span>
-            </span>
-          </a>
-          <nav className="header-nav" aria-label="Main navigation">
-            <a href="#latest">Travel notes</a>
-            <a
-              className="nav-cta"
-              href="https://localbalivillas.com"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Find a villa
-            </a>
-          </nav>
-        </div>
-      </header>
+      <JsonLd data={itemListJsonLd(lang, summaries)} />
 
-      <main className="journal-home">
+      <SiteHeader lang={lang}>
+        <a href="#latest">{t.navJournal}</a>
+      </SiteHeader>
+
+      <main className="journal-home" id="article">
         <section className="journal-intro">
-          <span className="journal-edition">Bali notes · 2026</span>
-          <p className="journal-kicker">The Local Edit</p>
-          <h1>Travel slowly.<br />Stay locally.</h1>
-          <p className="journal-deck">
-            Considered guides to Bali’s villas, neighbourhoods, and everyday
-            rituals—written for travellers who want to feel at home.
-          </p>
+          {language.edition && (
+            <span className="journal-edition">{language.edition}</span>
+          )}
+          <p className="journal-kicker">{site.name}</p>
+          <h1>
+            {t.headline[0]}
+            <br />
+            {t.headline[1]}
+          </h1>
+          <p className="journal-deck">{language.description}</p>
         </section>
 
         <section className="latest-section" id="latest">
           <div className="section-heading-row">
-            <span>Latest story</span>
-            <span>01</span>
+            <span>{t.latestStories}</span>
+            <span>{String(summaries.length).padStart(2, "0")}</span>
           </div>
 
-          {error && <p className="index-message">{error}</p>}
-
-          {!error && articles.length === 0 && (
-            <p className="index-message">Gathering the latest travel notes…</p>
-          )}
-
-          <div className="article-grid">
-            {articles.map((article) => (
-              <a
-                className="article-card"
-                href={`/articles/${article.slug}`}
-                key={article.slug}
-              >
-                <div className="article-card-image-wrap">
-                  <img
-                    className="article-card-image"
-                    src={article.heroImage}
-                    alt=""
-                  />
-                  <span className="article-card-arrow" aria-hidden="true">↗</span>
-                </div>
-                <div className="article-card-copy">
-                  <div className="article-card-meta">
-                    <span>{article.category}</span>
-                    <span>{article.readTime}</span>
+          {summaries.length === 0 ? (
+            <p className="index-message">
+              {t.emptyIndexBefore}
+              <code>npm run generate</code>
+              {t.emptyIndexAfter}
+            </p>
+          ) : (
+            <div className="article-grid">
+              {summaries.map((article) => (
+                <Link
+                  className="article-card"
+                  href={articlePath(lang, article.slug)}
+                  key={article.slug}
+                >
+                  <div className="article-card-image-wrap">
+                    <img
+                      className="article-card-image"
+                      src={article.heroImage}
+                      alt={article.heroImageAlt}
+                      loading="lazy"
+                      decoding="async"
+                    />
+                    <span className="article-card-arrow" aria-hidden="true">
+                      ↗
+                    </span>
                   </div>
-                  <h2>{article.title}</h2>
-                  <p>{article.deck}</p>
-                  <span className="read-story">Read the full story</span>
-                </div>
-              </a>
-            ))}
-          </div>
+                  <div className="article-card-copy">
+                    <div className="article-card-meta">
+                      <span>{article.category}</span>
+                      <span>{article.readTime}</span>
+                    </div>
+                    <h2>{article.title}</h2>
+                    <p>{article.deck}</p>
+                    <time dateTime={article.publishedAt}>
+                      {formatDate(article.publishedAt, lang)}
+                    </time>
+                    <span className="read-story">{t.readStory}</span>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
         </section>
+
+        {language.keywords.length > 0 && (
+          <section className="topic-section" aria-labelledby="topics-heading">
+            <div className="section-heading-row">
+              <span id="topics-heading">{t.whatWeCover}</span>
+              <span>—</span>
+            </div>
+            <p className="topic-lede">{t.topicLede(site.name, headKeyword)}</p>
+            <ul className="topic-list">
+              {language.keywords.map((keyword) => (
+                <li key={keyword}>{keyword}</li>
+              ))}
+            </ul>
+          </section>
+        )}
       </main>
 
-      <footer className="article-footer index-footer">
-        <div className="footer-inner">
-          <h2>Find your own corner of Bali.</h2>
-          <div className="footer-links">
-            <a
-              href="https://localbalivillas.com"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Browse Local Bali Villas ↗
-            </a>
-            <span>Travel slowly. Stay locally.</span>
-          </div>
-        </div>
-      </footer>
+      <SiteFooter
+        lang={lang}
+        heading={t.footerHomeHeading}
+        className="index-footer"
+      />
     </>
   );
 }
