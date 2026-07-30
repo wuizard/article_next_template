@@ -25,7 +25,9 @@ module.exports = {
         NODE_ENV: "production",
         PORT: 3000,
       },
-      instances: 1,
+      // Explicit fork mode: PM2 selects cluster whenever `instances` is set,
+      // and its cluster wrapper does not load ESM entrypoints reliably.
+      exec_mode: "fork",
       autorestart: true,
       max_restarts: 10,
       min_uptime: "20s",
@@ -42,7 +44,9 @@ module.exports = {
       env: {
         NODE_ENV: "production",
       },
-      instances: 1,
+      // Explicit fork mode: PM2 selects cluster whenever `instances` is set,
+      // and its cluster wrapper does not load ESM entrypoints reliably.
+      exec_mode: "fork",
       autorestart: true,
       max_restarts: 10,
       min_uptime: "20s",
@@ -60,6 +64,7 @@ module.exports = {
       env: {
         NODE_ENV: "production",
       },
+      exec_mode: "fork",
       autorestart: false,
       // 01:00 server time. Set TZ below if the server is not on Bali time.
       cron_restart: "0 1 * * *",
