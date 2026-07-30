@@ -36,7 +36,13 @@ import {
   verifyPassword,
   verifySession,
 } from "./auth.mjs";
-import { draftPage, errorPage, loginPage, queuePage } from "./views.mjs";
+import {
+  draftPage,
+  errorPage,
+  loginPage,
+  queuePage,
+  setBasePath,
+} from "./views.mjs";
 
 loadEnvFile();
 const config = readConfig();
@@ -47,6 +53,35 @@ const PASSWORD_HASH = process.env.ADMIN_PASSWORD_HASH ?? "";
 const SESSION_SECRET = process.env.ADMIN_SESSION_SECRET ?? "";
 const PUBLISH_COMMAND = process.env.ADMIN_PUBLISH_COMMAND ?? "";
 const SECURE_COOKIES = process.env.ADMIN_SECURE_COOKIES !== "false";
+// Set to e.g. "/studio" to mount the panel under a sub-path on your proxy.
+// Not needed when the panel has its own hostname.
+const BASE_PATH = (process.env.ADMIN_BASE_PATH ?? "").replace(/\/+$/, "");
+setBasePath(BASE_PATH);
+
+/**
+ * Hostnames this panel will answer to. Requests arriving with any other Host
+ * header are refused before routing.
+ *
+ * nginx already restricts who can reach the port, but this is the enforcement
+ * that survives a misconfigured proxy, a second vhost pointed at the same
+ * upstream, or a DNS-rebinding attempt from a browser on the LAN.
+ */
+const ALLOWED_HOSTS = new Set(
+  (process.env.ADMIN_ALLOWED_HOSTS ?? "localhost,127.0.0.1,::1")
+    .split(",")
+    .map((entry) => entry.trim().toLowerCase())
+    .filter(Boolean),
+);
+
+function hostAllowed(req) {
+  const header = req.headers.host ?? "";
+  if (!header) return false;
+  // Strip the port; keep IPv6 literals intact.
+  const hostname = header.startsWith("[")
+    ? header.slice(1, header.indexOf("]"))
+    : header.split(":")[0];
+  return ALLOWED_HOSTS.has(hostname.toLowerCase());
+}
 
 if (!PASSWORD_HASH || !SESSION_SECRET) {
   console.error(
@@ -78,7 +113,11 @@ function send(res, status, body, headers = {}) {
 }
 
 function redirect(res, location, headers = {}) {
-  res.writeHead(303, { location, "cache-control": "no-store", ...headers });
+  res.writeHead(303, {
+    location: `${BASE_PATH}${location}`,
+    "cache-control": "no-store",
+    ...headers,
+  });
   res.end();
 }
 
@@ -147,7 +186,23 @@ async function rebuild() {
 // --- routes ----------------------------------------------------------------
 
 async function handle(req, res, url) {
-  const { pathname } = url;
+  if (!hostAllowed(req)) {
+    return send(
+      res,
+      403,
+      errorPage({
+        siteName,
+        status: 403,
+        message: "This panel does not answer to that hostname.",
+      }),
+    );
+  }
+
+  // Everything below reasons about paths as if mounted at the root.
+  if (BASE_PATH && !url.pathname.startsWith(BASE_PATH)) {
+    return send(res, 404, errorPage({ siteName, status: 404, message: "Nothing here." }));
+  }
+  const pathname = url.pathname.slice(BASE_PATH.length) || "/";
 
   // --- unauthenticated ---
   if (pathname === "/login" && req.method === "GET") {
@@ -327,8 +382,9 @@ const server = createServer((req, res) => {
 });
 
 server.listen(PORT, HOST, () => {
-  console.log(`\n  ${siteName} review panel — http://${HOST}:${PORT}`);
+  console.log(`\n  ${siteName} review panel — http://${HOST}:${PORT}${BASE_PATH}`);
   console.log(`  languages: ${config.site.codes.join(", ")}`);
+  console.log(`  answers to: ${[...ALLOWED_HOSTS].join(", ")}`);
   if (!PUBLISH_COMMAND) {
     console.log("  ADMIN_PUBLISH_COMMAND is unset: approving updates the");
     console.log("  content files but will not rebuild the site.\n");

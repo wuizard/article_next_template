@@ -4,6 +4,13 @@
  */
 import { auditSummary } from "./seo.mjs";
 
+/** Prefix for every link and form action when mounted under a sub-path. */
+let basePath = "";
+export function setBasePath(value) {
+  basePath = value ?? "";
+}
+const at = (path) => `${basePath}${path}`;
+
 export function escapeHtml(value) {
   return String(value ?? "")
     .replace(/&/g, "&amp;")
@@ -110,7 +117,7 @@ export function loginPage({ siteName, error }) {
     body: `<div class="wrap narrow">
   <h1 style="font-size:1.1rem;letter-spacing:.14em;text-transform:uppercase">${escapeHtml(siteName)} review</h1>
   ${error ? `<div class="notice err">${escapeHtml(error)}</div>` : ""}
-  <form class="card" method="post" action="/login">
+  <form class="card" method="post" action="${at('/login')}">
     <label>Password
       <input type="password" name="password" autocomplete="current-password" autofocus required>
     </label>
@@ -122,9 +129,9 @@ export function loginPage({ siteName, error }) {
 
 function bar(siteName, extra = "") {
   return `<header class="bar">
-  <h1><a href="/" style="text-decoration:none;color:inherit">${escapeHtml(siteName)} review</a></h1>
+  <h1><a href="${at('/')}" style="text-decoration:none;color:inherit">${escapeHtml(siteName)} review</a></h1>
   <div style="display:flex;gap:.6rem;align-items:center">${extra}
-    <form method="post" action="/logout" style="margin:0"><button type="submit">Sign out</button></form>
+    <form method="post" action="${at('/logout')}" style="margin:0"><button type="submit">Sign out</button></form>
   </div>
 </header>`;
 }
@@ -139,7 +146,7 @@ export function queuePage({ siteName, drafts, notice, csrf, generating }) {
         : warn
           ? `${warn} to review`
           : "ready";
-      return `<a class="queue-item" href="/draft/${encodeURIComponent(article.lang)}/${encodeURIComponent(article.slug)}">
+      return `<a class="queue-item" href="${at(`/draft/${encodeURIComponent(article.lang)}/${encodeURIComponent(article.slug)}`)}">
   <span class="tag">${escapeHtml(article.lang.toUpperCase())}</span>
   <h2>${escapeHtml(article.title)}</h2>
   <span class="tag ${state}">${escapeHtml(label)}</span>
@@ -154,7 +161,7 @@ export function queuePage({ siteName, drafts, notice, csrf, generating }) {
     body: `${bar(siteName)}
 <div class="wrap">
   ${notice ? `<div class="notice ok">${escapeHtml(notice)}</div>` : ""}
-  <form method="post" action="/generate" style="margin-bottom:1.5rem">
+  <form method="post" action="${at('/generate')}" style="margin-bottom:1.5rem">
     <input type="hidden" name="csrf" value="${escapeHtml(csrf)}">
     <button class="primary" type="submit"${generating ? " disabled" : ""}>Generate new drafts</button>
     <span class="meta" style="margin-left:.6rem">Runs the generator for every language.</span>
@@ -246,7 +253,7 @@ export function draftPage({ siteName, article, checks, csrf, notice, error }) {
   return page({
     siteName,
     title: article.title,
-    body: `${bar(siteName, `<a href="/" style="align-self:center">← All drafts</a>`)}
+    body: `${bar(siteName, `<a href="${at('/')}" style="align-self:center">← All drafts</a>`)}
 <div class="wrap">
   ${notice ? `<div class="notice ok">${escapeHtml(notice)}</div>` : ""}
   ${error ? `<div class="notice err">${escapeHtml(error)}</div>` : ""}
@@ -254,7 +261,7 @@ export function draftPage({ siteName, article, checks, csrf, notice, error }) {
   ${sourceNote}
 
   <div class="grid">
-    <form method="post" action="/draft/${encodeURIComponent(article.lang)}/${encodeURIComponent(article.slug)}">
+    <form method="post" action="${at(`/draft/${encodeURIComponent(article.lang)}/${encodeURIComponent(article.slug)}`)}">
       <input type="hidden" name="csrf" value="${escapeHtml(csrf)}">
 
       <div class="card">
@@ -301,6 +308,6 @@ export function errorPage({ siteName, status, message }) {
   return page({
     siteName,
     title: `${status}`,
-    body: `<div class="wrap narrow"><div class="card"><h1 style="margin-top:0">${status}</h1><p>${escapeHtml(message)}</p><p><a href="/">Back to drafts</a></p></div></div>`,
+    body: `<div class="wrap narrow"><div class="card"><h1 style="margin-top:0">${status}</h1><p>${escapeHtml(message)}</p><p><a href="${at('/')}">Back to drafts</a></p></div></div>`,
   });
 }
