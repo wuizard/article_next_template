@@ -12,7 +12,9 @@
     "generate": "node scripts/generate-content.mjs",
     "content:sync": "node scripts/generate-content.mjs --sync",
     "content:plan": "node scripts/generate-content.mjs --dry-run",
-    "test": "npm run build && node --test tests/rendered-html.test.mjs",
+    "review": "node scripts/admin/server.mjs",
+    "admin:password": "node scripts/admin/hash-password.mjs",
+    "test": "npm run build && node --test tests/*.test.mjs",
     "lint": "eslint . --ignore-pattern dist --ignore-pattern .next",
     "db:generate": "drizzle-kit generate"
   },
