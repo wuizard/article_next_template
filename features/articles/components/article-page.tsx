@@ -247,6 +247,7 @@ export function ArticlePage({ lang, slug }: { lang: string; slug: string }) {
                 </ul>
               </section>
             )}
+
           </article>
         </div>
       </main>

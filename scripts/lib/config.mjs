@@ -76,6 +76,12 @@ function readLanguage(code, siteUrl) {
     locale: code,
     promptName: code,
   };
+  const legacyCtaHref = str(
+    "CTA_HREF",
+    code,
+    str("BRAND_URL", null, siteUrl),
+  );
+  const backlinkUrls = list("BACKLINK_URLS", code, [legacyCtaHref]);
 
   return {
     code,
@@ -106,8 +112,11 @@ function readLanguage(code, siteUrl) {
       label: str("CTA_LABEL", code, "Recommended resource"),
       title: str("CTA_TITLE", code, str("BRAND_NAME", null, "Visit our site")),
       description: str("CTA_DESCRIPTION", code),
-      href: str("CTA_HREF", code, str("BRAND_URL", null, siteUrl)),
+      // Archive pages use the first URL; generated articles randomly choose
+      // one URL from the full pool and persist that choice in their JSON.
+      href: backlinkUrls[0],
     },
+    backlinkUrls,
   };
 }
 

@@ -258,6 +258,7 @@ export function draftPage({ siteName, article, checks, csrf, notice, error }) {
   ${notice ? `<div class="notice ok">${escapeHtml(notice)}</div>` : ""}
   ${error ? `<div class="notice err">${escapeHtml(error)}</div>` : ""}
   <p class="meta">${escapeHtml(article.lang.toUpperCase())} · ${article.wordCount} words · focus keyword “${escapeHtml(article.seo.focusKeyword)}”</p>
+  <p class="meta">Assigned backlink: ${escapeHtml(article.backlink.href)}</p>
   ${sourceNote}
 
   <div class="grid">

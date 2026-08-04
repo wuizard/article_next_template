@@ -36,6 +36,11 @@ function pick(pool, index, fallback) {
   return pool[index % pool.length];
 }
 
+function pickRandom(pool, fallback, random) {
+  if (!pool || pool.length === 0) return fallback;
+  return pool[Math.floor(random() * pool.length)];
+}
+
 function uniqueSlug(candidate, taken) {
   const base = slugify(candidate) || "article";
   if (!taken.has(base)) return base;
@@ -78,12 +83,18 @@ export function composeArticle({
   publishedAt = new Date(),
   source,
   status = "draft",
+  random = Math.random,
 }) {
   const slug = uniqueSlug(payload.slug || payload.title, takenSlugs);
   const words = articleWordCount(payload);
   const pool = config.generation.imagePool;
   const heroImage = pick(pool, imageIndex, "/og.png");
   const inlineImage = pick(pool, imageIndex + 1, heroImage);
+  const backlinkHref = pickRandom(
+    language.backlinkUrls,
+    language.cta.href,
+    random,
+  );
   const iso = publishedAt.toISOString();
 
   const keywords = [
@@ -133,7 +144,7 @@ export function composeArticle({
       label: language.cta.label,
       title: language.cta.title,
       description: language.cta.description,
-      href: language.cta.href,
+      href: backlinkHref,
     },
     source: source ?? { type: "ai" },
   };

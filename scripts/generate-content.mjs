@@ -169,7 +169,7 @@ async function generateForLanguage(config, language, writer, count) {
     await writeArticle(kind, article);
     written.push(article);
     log(
-      `  [${language.code}] ✓ ${kind}/${article.slug} — ${article.wordCount} words`,
+      `  [${language.code}] ✓ ${kind}/${article.slug} — ${article.wordCount} words · backlink ${article.backlink.href}`,
     );
   }
 

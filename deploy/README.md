@@ -93,21 +93,19 @@ systemctl list-timers journal-content.timer
 
 ## 5. nginx
 
-Add the rate-limit zone once, inside the `http { }` block of
-`/etc/nginx/nginx.conf`:
-
-```nginx
-limit_req_zone $binary_remote_addr zone=studio_login:10m rate=10r/m;
-```
-
-Then install the site config:
+Two files. The rate-limit zone must live in the `http { }` block, which is
+what `conf.d/` is included from — so it goes there, not in the site config:
 
 ```bash
-sudo cp deploy/nginx-journal.conf /etc/nginx/sites-available/journal
+sudo cp deploy/nginx-ratelimit.conf /etc/nginx/conf.d/journal-ratelimit.conf
+sudo cp deploy/nginx-journal.conf   /etc/nginx/sites-available/journal
 sudo ln -s /etc/nginx/sites-available/journal /etc/nginx/sites-enabled/
 sudo certbot --nginx -d journal.localbalivillas.com -d news-studio.localbalivillas.com
 sudo nginx -t && sudo systemctl reload nginx
 ```
+
+If `nginx -t` reports `unknown limit_req_zone "studio_login"`, the first file
+did not land in a directory that `http { }` includes.
 
 Point both DNS records at the server first, or certbot will fail.
 

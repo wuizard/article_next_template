@@ -96,6 +96,18 @@ Feeds can be in any language; the article is written in the target language
 either way. Readers switch with the ID/EN control in the header — plain links
 to real URLs, so crawlers follow them and they work without JavaScript.
 
+New articles receive one randomly selected backlink from the comma-separated
+pool in `.env`. The selection happens once during generation and is saved in
+the draft JSON, so the URL stays unchanged between builds:
+
+```ini
+BACKLINK_URLS=https://localbalivillas.com,https://localbalivillas.com/villas
+BACKLINK_URLS_ID=https://localbalivillas.com/id,https://localbalivillas.com/villa
+```
+
+`BACKLINK_URLS_<LANG>` overrides the shared pool for that language. The older
+single-value `CTA_HREF` remains the fallback when no pool is configured.
+
 UI chrome (navigation, headings, buttons) lives in
 `features/articles/i18n/strings.ts`. To add a language: copy a dictionary,
 translate it, add the code to `SITE_LANGUAGES`. A language with no dictionary
