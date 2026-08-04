@@ -76,12 +76,12 @@ function readLanguage(code, siteUrl) {
     locale: code,
     promptName: code,
   };
-  const legacyCtaHref = str(
+  const ctaHref = str(
     "CTA_HREF",
     code,
     str("BRAND_URL", null, siteUrl),
   );
-  const backlinkUrls = list("BACKLINK_URLS", code, [legacyCtaHref]);
+  const backlinkUrls = list("BACKLINK_URLS", code, [ctaHref]);
 
   return {
     code,
@@ -112,9 +112,9 @@ function readLanguage(code, siteUrl) {
       label: str("CTA_LABEL", code, "Recommended resource"),
       title: str("CTA_TITLE", code, str("BRAND_NAME", null, "Visit our site")),
       description: str("CTA_DESCRIPTION", code),
-      // Archive pages use the first URL; generated articles randomly choose
-      // one URL from the full pool and persist that choice in their JSON.
-      href: backlinkUrls[0],
+      // Header, recommendation-card, and footer buttons always use CTA_HREF.
+      // Generated articles persist a separate random inline backlink below.
+      href: ctaHref,
     },
     backlinkUrls,
   };

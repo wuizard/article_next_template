@@ -42,6 +42,9 @@ export type UiStrings = {
   recommendedAria: string;
   visitPrefix: string;
   visitSite: string;
+  inlineBacklinkPrefix: string;
+  inlineBacklinkLabel: string;
+  inlineBacklinkSuffix: string;
 
   sourceNotePrefix: string;
   sourceNoteFallbackLink: string;
@@ -91,6 +94,9 @@ const en: UiStrings = {
   recommendedAria: "Recommended resource",
   visitPrefix: "Visit",
   visitSite: "Visit Site",
+  inlineBacklinkPrefix: "Use ",
+  inlineBacklinkLabel: "our checklist tool",
+  inlineBacklinkSuffix: ".",
 
   sourceNotePrefix: "Summarised from ",
   sourceNoteFallbackLink: "the original report",
@@ -141,6 +147,9 @@ const id: UiStrings = {
   recommendedAria: "Rujukan pilihan",
   visitPrefix: "Kunjungi",
   visitSite: "Kunjungi Site",
+  inlineBacklinkPrefix: "Gunakan ",
+  inlineBacklinkLabel: "alat checklist kami",
+  inlineBacklinkSuffix: ".",
 
   sourceNotePrefix: "Diringkas dari ",
   sourceNoteFallbackLink: "laporan aslinya",

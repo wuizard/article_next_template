@@ -9,6 +9,7 @@ import {
   articlePath,
   formatDate,
   getArticle,
+  getLanguage,
   getRelated,
   langPath,
   site,
@@ -49,6 +50,10 @@ export function ArticlePage({ lang, slug }: { lang: string; slug: string }) {
   }
 
   const related = getRelated(lang, article.slug);
+  const ctaHref = getLanguage(lang).cta.href;
+  const backlinkSectionIndex = article.sections.findIndex(
+    (section) => section.paragraphs.length > 0,
+  );
 
   // A translation rarely shares a slug, so the switcher sends other languages
   // to their archive rather than to a URL that would 404.
@@ -63,7 +68,7 @@ export function ArticlePage({ lang, slug }: { lang: string; slug: string }) {
 
       <SiteHeader
         lang={lang}
-        ctaHref={article.backlink.href}
+        ctaHref={ctaHref}
         switcherHref={switcherHref}
       >
         <Link href={langPath(lang)}>{t.navJournal}</Link>
@@ -154,7 +159,22 @@ export function ArticlePage({ lang, slug }: { lang: string; slug: string }) {
                 <span className="section-kicker">{section.kicker}</span>
                 <h2>{section.heading}</h2>
                 {section.paragraphs.map((paragraph, paragraphIndex) => (
-                  <p key={`${section.id}-${paragraphIndex}`}>{paragraph}</p>
+                  <p key={`${section.id}-${paragraphIndex}`}>
+                    {paragraph}
+                    {index === backlinkSectionIndex && paragraphIndex === 0 && (
+                      <>
+                        {" "}
+                        {t.inlineBacklinkPrefix}
+                        <a
+                          href={article.backlink.href}
+                          style={{ color: "inherit", textDecoration: "none" }}
+                        >
+                          {t.inlineBacklinkLabel}
+                        </a>
+                        {t.inlineBacklinkSuffix}
+                      </>
+                    )}
+                  </p>
                 ))}
 
                 {index === 0 && article.inlineImage.src && (
@@ -226,8 +246,8 @@ export function ArticlePage({ lang, slug }: { lang: string; slug: string }) {
                 <h3>{article.backlink.title}</h3>
                 <p>{article.backlink.description}</p>
               </div>
-              <a href={article.backlink.href} target="_blank" rel="noopener">
-                {backlinkButtonLabel(article.backlink.href, {
+              <a href={ctaHref} target="_blank" rel="noopener">
+                {backlinkButtonLabel(ctaHref, {
                   visitPrefix: t.visitPrefix,
                   externalLabel: t.visitSite,
                 })}{" "}
@@ -259,7 +279,7 @@ export function ArticlePage({ lang, slug }: { lang: string; slug: string }) {
       <SiteFooter
         lang={lang}
         heading={t.footerArticleHeading}
-        ctaHref={article.backlink.href}
+        ctaHref={ctaHref}
       />
     </>
   );

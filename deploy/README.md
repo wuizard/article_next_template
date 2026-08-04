@@ -146,6 +146,19 @@ journalctl -u journal-admin -f
 journalctl -u journal-content -n 50     # includes the API cost of each run
 ```
 
+## Updating a PM2 deployment
+
+For a deployment running from `/home/ubuntu/ant` under the `ubuntu` user:
+
+```bash
+chmod +x deploy/update-production.sh
+./deploy/update-production.sh
+```
+
+The script pulls only fast-forward changes, installs the lockfile exactly,
+builds the production assets, and restarts `journal-site` only after a
+successful build.
+
 ## Firewall
 
 Only 80 and 443 need to be open. Ports 3000 and 4100 must not be reachable
