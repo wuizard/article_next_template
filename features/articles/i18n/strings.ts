@@ -41,6 +41,7 @@ export type UiStrings = {
   keepReading: string;
   recommendedAria: string;
   visitPrefix: string;
+  visitSite: string;
 
   sourceNotePrefix: string;
   sourceNoteFallbackLink: string;
@@ -89,6 +90,7 @@ const en: UiStrings = {
   keepReading: "Keep reading",
   recommendedAria: "Recommended resource",
   visitPrefix: "Visit",
+  visitSite: "Visit Site",
 
   sourceNotePrefix: "Summarised from ",
   sourceNoteFallbackLink: "the original report",
@@ -138,6 +140,7 @@ const id: UiStrings = {
   keepReading: "Bacaan lainnya",
   recommendedAria: "Rujukan pilihan",
   visitPrefix: "Kunjungi",
+  visitSite: "Kunjungi Site",
 
   sourceNotePrefix: "Diringkas dari ",
   sourceNoteFallbackLink: "laporan aslinya",

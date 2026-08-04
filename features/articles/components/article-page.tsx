@@ -22,6 +22,7 @@ import {
 import { JsonLd } from "./json-ld";
 import { ShareButton } from "./share-button";
 import { SiteFooter, SiteHeader } from "./site-chrome";
+import { backlinkButtonLabel } from "../lib/backlink-label.mjs";
 
 /**
  * Server component. The entire article body — headings, prose, FAQs, internal
@@ -226,8 +227,11 @@ export function ArticlePage({ lang, slug }: { lang: string; slug: string }) {
                 <p>{article.backlink.description}</p>
               </div>
               <a href={article.backlink.href} target="_blank" rel="noopener">
-                {t.visitPrefix}{" "}
-                {article.backlink.href.replace(/^https?:\/\//, "")} ↗
+                {backlinkButtonLabel(article.backlink.href, {
+                  visitPrefix: t.visitPrefix,
+                  externalLabel: t.visitSite,
+                })}{" "}
+                ↗
               </a>
             </aside>
 
